@@ -18,17 +18,17 @@ Helps the Agent follow the latest Go conventions, prefer modern APIs, and avoid 
 
 ## On-Demand Reading: Which File to Open
 
-Detailed content is split by topic into the `reference/` directory. **Do not load everything at once** - read only the file relevant to the current task:
+Detailed content is split by topic into the `references/` directory. **Do not load everything at once** - read only the file relevant to the current task:
 
 | Current task | Read |
 |---------|------|
-| Writing generics, range loops, iterators, `new(expr)`, type aliases, or other **language features** | `reference/language-features.md` |
-| Choosing **standard library APIs** (slices / maps / cmp / log/slog / unique / context / errors / os, etc.) | `reference/standard-library.md` |
-| Using the **go command / vet / gofmt / go fix / go mod** toolchain | `reference/toolchain.md` |
-| Confirming **coding conventions** (error handling, naming, testing, project structure, concurrency) | `reference/code-conventions.md` |
-| **Version upgrades**, investigating behavior changes, checking which APIs are deprecated | `reference/migration-and-deprecations.md` |
+| Writing generics, range loops, iterators, `new(expr)`, type aliases, or other **language features** | `references/language-features.md` |
+| Choosing **standard library APIs** (slices / maps / cmp / log/slog / unique / context / errors / os, etc.) | `references/standard-library.md` |
+| Using the **go command / vet / gofmt / go fix / go mod** toolchain | `references/toolchain.md` |
+| Confirming **coding conventions** (error handling, naming, testing, project structure, concurrency) | `references/code-conventions.md` |
+| **Version upgrades**, investigating behavior changes, checking which APIs are deprecated | `references/migration-and-deprecations.md` |
 
-All paths are relative to this skill directory, i.e. `reference/<name>.md`.
+All paths are relative to this skill directory, i.e. `references/<name>.md`.
 
 ## Version Cheatsheet (one line per version)
 
@@ -106,7 +106,7 @@ func BenchmarkX(b *testing.B) {
 
 ## Behavior Change Reminders (easy to trip over)
 
-These changes may affect existing code behavior. Always check `reference/migration-and-deprecations.md` when upgrading:
+These changes may affect existing code behavior. Always check `references/migration-and-deprecations.md` when upgrading:
 
 - **1.22**: for-loop variable semantics changed (new variable per iteration) - code relying on the old semantics will behave differently.
 - **1.23**: `Timer`/`Ticker` channels are now unbuffered (`len`/`cap` return 0 instead of 1).

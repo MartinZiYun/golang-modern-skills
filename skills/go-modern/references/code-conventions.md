@@ -245,7 +245,7 @@ gofmt aligns list indentation and fixes heading format automatically.
 
 ### Always run go vet
 
-`go vet` is a subset of `go test`. New analyzers across versions cover common mistakes (see `reference/toolchain.md`). **Always run `go vet ./...` before committing.**
+`go vet` is a subset of `go test`. New analyzers across versions cover common mistakes (see `references/toolchain.md`). **Always run `go vet ./...` before committing.**
 
 ### Modernize with go fix (1.26+)
 

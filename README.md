@@ -1,34 +1,63 @@
-# go-modern
+# golang-modern-skills
 
-An agent skill that helps AI coding agents follow modern Go development conventions and use new language features (Go 1.19-1.27).
+**English** | [简体中文](README.zh-CN.md)
 
-## Overview
+An agent skill that keeps AI coding agents on modern Go conventions and aware of language changes across **Go 1.19 → 1.27**.
 
-When an agent writes, reviews, or generates Go code, this skill provides:
+The skill is `skills/go-modern/`. It follows the common `SKILL.md` convention, so any agent framework that discovers skills by scanning for `SKILL.md` files can use it.
 
-- Up-to-date conventions (prefer `slices`/`maps`/`log/slog`, avoid deprecated APIs)
-- New-feature guidance (generics evolution, range-over-func iterators, generic methods, `new(expr)`, etc.)
-- Behavior-change warnings for version upgrades
+## What It Provides
 
-Designed for **on-demand reading**: the entry file (SKILL.md) is a concise index with a high-frequency quick reference. Detailed content is split into topic-specific files under `reference/` that the agent loads only when relevant to the current task, minimizing context usage.
+When an agent writes, reviews, or generates Go code, the skill supplies:
 
-## File Structure
+| Area | Typical guidance |
+|------|------------------|
+| Modern APIs | Prefer `slices`/`maps`/`cmp`, `log/slog`, `math/rand/v2`, `atomic.Int64`/`atomic.Pointer[T]`; avoid deprecated patterns |
+| New language features | Generics evolution, generic methods (1.27), range-over-func iterators (1.23), `new(expr)` (1.26), per-iteration loop variables (1.22) |
+| Toolchain usage | `go vet` analyzers, `go fix` modernizers (1.26+), `go doc -http`, PGO, `go mod` / `tool` directives |
+| Upgrade safety | Behavior changes, deprecations, and the `GODEBUG` timeline that can break existing code |
+
+## Design: On-Demand Reading
+
+Context is the scarce resource, so the skill is layered:
+
+- **`SKILL.md`** - the only file loaded up front: trigger rules, version cheatsheet, high-frequency quick reference, and a task→file lookup table.
+- **`references/*.md`** - detailed topic files the agent opens **only** when the current task needs them.
+
+A request about `go vet` loads `references/toolchain.md`; a request about generics loads `references/language-features.md`. Nothing else is pulled in.
+
+## Repository Layout
 
 ```
-go-modern/
-├── SKILL.md                              Entry: trigger rules + version cheatsheet + quick reference + on-demand index
-├── README.md                             This file (English)
-├── README.zh-CN.md                       Chinese readme
-├── locales/                              Optional: display-name localization (for frameworks that support it)
-│   ├── en-US.json                        English display name & brief
-│   └── zh-CN.json                        Chinese display name & brief
-└── reference/
-    ├── language-features.md              Generics, iterators, built-ins, type system
-    ├── standard-library.md               New packages & key API changes
-    ├── toolchain.md                      go command, vet, gofmt, go fix, PGO
-    ├── code-conventions.md               Error handling, testing, concurrency, logging
-    └── migration-and-deprecations.md     Behavior changes, deprecations, GODEBUG timeline
+golang-modern-skills/
+├── README.md                            English readme (this file)
+├── README.zh-CN.md                      Chinese readme
+├── LICENSE                              Apache License 2.0
+├── docs/                                Source material: official release notes, Go 1.19-1.27
+│   └── Go1.XX-release-notes.md
+└── skills/
+    └── go-modern/                       The skill (install this folder)
+        ├── SKILL.md                     Entry: triggers + version cheatsheet + quick reference + lookup table
+        ├── locales/                     Optional display-name localization
+        │   ├── en-US.json
+        │   └── zh-CN.json
+        └── references/                  Topic files, loaded on demand
+            ├── language-features.md
+            ├── standard-library.md
+            ├── toolchain.md
+            ├── code-conventions.md
+            └── migration-and-deprecations.md
 ```
+
+## Reference Files
+
+| File | Covers | Read when |
+|------|--------|-----------|
+| `language-features.md` | Generics, iterators, built-ins, type system | Writing generics, range loops, `new(expr)`, type aliases |
+| `standard-library.md` | New packages and key API changes | Choosing stdlib APIs (`slices`, `maps`, `cmp`, `log/slog`, `unique`, `os`, ...) |
+| `toolchain.md` | `go` command, `vet`, `gofmt`, `go fix`, PGO | Touching build, test, or module tooling |
+| `code-conventions.md` | Error handling, naming, testing, concurrency, logging | Confirming idiomatic style or reviewing code |
+| `migration-and-deprecations.md` | Behavior changes, deprecations, `GODEBUG` timeline | Upgrading a Go version or diagnosing an upgrade regression |
 
 ## Coverage
 
@@ -36,33 +65,37 @@ go-modern/
 - **Verified against**: Go 1.27.3 (windows/amd64) - APIs checked with `go doc`
 - **Source**: official release notes for each version
 
-Patch releases contain only bug fixes and security patches; they do not introduce new features. This skill describes features at the major-version level.
+Patch releases (e.g. 1.27.0 → 1.27.3) only contain bug and security fixes, so features are described at major-version granularity.
+
+To confirm whether an API exists under your `go.mod` version, run `go doc <pkg>.<API>`, or rely on `go vet`'s `stdversion` check.
 
 ## Installation
 
-This skill follows the common `SKILL.md` convention: a directory containing a `SKILL.md` file with YAML frontmatter (`name`, `description`, `icon`). It works with any agent framework that discovers skills by scanning for `SKILL.md` files.
+This skill follows the common `SKILL.md` convention: a directory containing `SKILL.md` with YAML frontmatter (`name`, `description`, `icon`).
 
-To install:
+1. Copy the `skills/go-modern/` folder into your agent framework's skill scan directory.
+2. If your framework requires registering custom paths, add that folder path to its config.
+3. Restart the agent or start a new session.
 
-1. Place the `go-modern/` folder in your agent framework's skill scan directory.
-2. If your framework requires registering custom paths, add the folder path to its configuration.
-3. Restart or start a new session.
+Consult your framework's documentation for the exact discovery path. For example, MiMo Desktop scans `.mimocode/skills/` (project-level) or `~/.config/mimocode/skills/` (global), and accepts custom paths via `skills.paths` in `mimocode.jsonc`.
 
-Consult your agent framework's documentation for the exact skill discovery path. For example, MiMo Desktop uses `.mimocode/skills/` (project-level) or `~/.config/mimocode/skills/` (global), and supports custom paths via the `skills.paths` field in `mimocode.jsonc`.
-
-The `locales/` directory is optional - frameworks that support display-name localization will use it; others will safely ignore it.
+The `locales/` directory is optional - frameworks that support display-name localization use it; others ignore it.
 
 ## How It Works
 
-1. The agent framework matches Go-related requests against the skill's `description` (trigger words: Go, Golang, .go, go.mod, generics, goroutine, etc.) and loads SKILL.md.
-2. SKILL.md tells the agent which `reference/` file to read based on the current task (a lookup table maps task type to file).
-3. The agent reads only the relevant reference file, keeping context lean.
+1. The framework matches Go-related requests against the skill's `description` (trigger words: Go, Golang, `.go`, `go.mod`, `gofmt`, `go vet`, generics, goroutine, channel, ...) and loads `SKILL.md`.
+2. `SKILL.md` maps the current task type to one `references/` file via its lookup table.
+3. The agent reads only that file. All paths in `SKILL.md` are relative to the skill directory, i.e. `references/<name>.md`.
 
 ## Updating the Skill
 
-The release notes source files (`Go1.XX-release-notes.md`) live in the parent working directory. To refresh the skill after a new Go release:
+Release notes are vendored under `docs/`. After a new Go release:
 
-1. Add the new version's release notes file.
-2. Update SKILL.md's version cheatsheet and version info.
-3. Add new features/packages to the relevant `reference/` file.
-4. Run `go doc <pkg>.<API>` to verify new APIs on the installed Go version.
+1. Add `docs/Go1.XX-release-notes.md`.
+2. Update the version cheatsheet and version info in `SKILL.md`.
+3. Add new features and packages to the matching `references/` file.
+4. Verify new APIs on the installed toolchain with `go doc <pkg>.<API>`.
+
+## License
+
+[Apache License 2.0](LICENSE)
